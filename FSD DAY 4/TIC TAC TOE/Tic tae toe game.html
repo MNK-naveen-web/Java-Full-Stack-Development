@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tic-Tac-Toe Game</title>
+
+    <style>
+
+        /* =========================
+           RESET
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        /* =========================
+           BODY
+        ========================= */
+
+        body {
+            min-height: 100vh;
+
+            font-family: Arial, sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #211044,
+                    #4b237c,
+                    #171022
+                );
+
+            color: white;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .game-container {
+            width: 100%;
+            max-width: 550px;
+
+            text-align: center;
+
+            background: rgba(255, 255, 255, 0.08);
+
+            padding: 30px;
+
+            border-radius: 25px;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.35);
+
+            backdrop-filter: blur(10px);
+        }
+
+
+        /* =========================
+           TITLE
+        ========================= */
+
+        h1 {
+            font-size: clamp(32px, 8vw, 50px);
+
+            margin-bottom: 8px;
+
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #d9cbea;
+
+            margin-bottom: 25px;
+        }
+
+
+        /* =========================
+           SCOREBOARD
+        ========================= */
+
+        .scoreboard {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+        }
+
+        .score {
+            background: white;
+
+            color: #25143e;
+
+            padding: 15px 5px;
+
+            border-radius: 15px;
+        }
+
+        .score span {
+            display: block;
+
+            font-size: 13px;
+
+            color: #666;
+
+            margin-bottom: 5px;
+        }
+
+        .score strong {
+            font-size: 25px;
+        }
+
+
+        /* =========================
+           TURN MESSAGE
+        ========================= */
+
+        .turn {
+            background: rgba(255,255,255,0.1);
+
+            padding: 12px;
+
+            border-radius: 30px;
+
+            margin-bottom: 20px;
+
+            font-weight: bold;
+        }
+
+
+        /* =========================
+           GAME BOARD
+        ========================= */
+
+        .board {
+            width: min(90vw, 420px);
+
+            aspect-ratio: 1 / 1;
+
+            margin: auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 10px;
+
+            padding: 10px;
+
+            background: rgba(0,0,0,0.2);
+
+            border-radius: 20px;
+        }
+
+
+        /* =========================
+           CELLS
+        ========================= */
+
+        .cell {
+            border: none;
+
+            border-radius: 15px;
+
+            background: white;
+
+            cursor: pointer;
+
+            font-size: clamp(45px, 12vw, 70px);
+
+            font-weight: bold;
+
+            transition: 0.2s;
+        }
+
+        .cell:hover {
+            background: #eeeeee;
+
+            transform: scale(0.97);
+        }
+
+        .cell.x {
+            color: #1976d2;
+
+            animation: pop 0.25s ease;
+        }
+
+        .cell.o {
+            color: #e91e63;
+
+            animation: pop 0.25s ease;
+        }
+
+        .cell.winner {
+            background: #42d66b;
+
+            color: white;
+
+            animation: winner 0.6s infinite alternate;
+        }
+
+
+        /* =========================
+           ANIMATIONS
+        ========================= */
+
+        @keyframes pop {
+
+            0% {
+                transform: scale(0);
+            }
+
+            70% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+
+        }
+
+
+        @keyframes winner {
+
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.06);
+
+                box-shadow:
+                    0 0 25px #42d66b;
+            }
+
+        }
+
+
+        /* =========================
+           RESULT
+        ========================= */
+
+        .result {
+            min-height: 40px;
+
+            margin: 15px 0;
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            color: #ffd95a;
+        }
+
+
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .buttons {
+            display: flex;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+            margin-top: 15px;
+        }
+
+        button.control {
+            border: none;
+
+            padding: 12px 18px;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+
+            transition: 0.2s;
+        }
+
+        button.control:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 7px 15px rgba(0,0,0,0.3);
+        }
+
+        .restart {
+            background: #7b4bdd;
+
+            color: white;
+        }
+
+        .new-game {
+            background: white;
+
+            color: #321550;
+        }
+
+        .reset {
+            background: #e94063;
+
+            color: white;
+        }
+
+
+        /* =========================
+           INSTRUCTIONS
+        ========================= */
+
+        .instructions {
+            margin-top: 25px;
+
+            padding: 15px;
+
+            background:
+                rgba(255,255,255,0.07);
+
+            border-radius: 15px;
+
+            color: #d4c9df;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 500px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .game-container {
+                padding: 20px 12px;
+            }
+
+            .score {
+                padding: 12px 4px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button.control {
+                width: 100%;
+            }
+
+            .board {
+                gap: 7px;
+
+                padding: 7px;
+            }
+
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <div class="game-container">
+
+
+        <!-- TITLE -->
+
+        <h1>
+            ⭕ TIC-TAC-TOE ❌
+        </h1>
+
+        <p class="subtitle">
+            Classic 2 Player Game
+        </p>
+
+
+        <!-- SCOREBOARD -->
+
+        <div class="scoreboard">
+
+            <div class="score">
+
+                <span>
+                    Player X
+                </span>
+
+                <strong id="scoreX">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="score">
+
+                <span>
+                    Draws
+                </span>
+
+                <strong id="scoreDraw">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="score">
+
+                <span>
+                    Player O
+                </span>
+
+                <strong id="scoreO">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- CURRENT PLAYER -->
+
+        <div
+            class="turn"
+            id="turn">
+
+            Player X's Turn
+
+        </div>
+
+
+        <!-- GAME BOARD -->
+
+        <div
+            class="board"
+            id="board">
+
+
+            <button
+                class="cell"
+                data-index="0">
+            </button>
+
+            <button
+                class="cell"
+                data-index="1">
+            </button>
+
+            <button
+                class="cell"
+                data-index="2">
+            </button>
+
+
+            <button
+                class="cell"
+                data-index="3">
+            </button>
+
+            <button
+                class="cell"
+                data-index="4">
+            </button>
+
+            <button
+                class="cell"
+                data-index="5">
+            </button>
+
+
+            <button
+                class="cell"
+                data-index="6">
+            </button>
+
+            <button
+                class="cell"
+                data-index="7">
+            </button>
+
+            <button
+                class="cell"
+                data-index="8">
+            </button>
+
+
+        </div>
+
+
+        <!-- RESULT -->
+
+        <div
+            class="result"
+            id="result">
+        </div>
+
+
+        <!-- BUTTONS -->
+
+        <div class="buttons">
+
+            <button
+                class="control restart"
+                onclick="restartGame()">
+
+                🔄 Restart Game
+
+            </button>
+
+
+            <button
+                class="control new-game"
+                onclick="newGame()">
+
+                🎮 New Game
+
+            </button>
+
+
+            <button
+                class="control reset"
+                onclick="resetScores()">
+
+                🗑️ Reset Scores
+
+            </button>
+
+        </div>
+
+
+        <!-- INSTRUCTIONS -->
+
+        <div class="instructions">
+
+            <strong>
+                How to Play
+            </strong>
+
+            <br>
+
+            Player X starts first.
+
+            Click an empty square to place your symbol.
+
+            Get three symbols in a row, column,
+            or diagonal to win!
+
+        </div>
+
+
+    </div>
+
+
+    <script>
+
+        /* =========================
+           GAME VARIABLES
+        ========================= */
+
+        let board = [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ];
+
+        let currentPlayer = "X";
+
+        let gameActive = true;
+
+
+        /* =========================
+           SCORES
+        ========================= */
+
+        let scores = {
+
+            X: 0,
+
+            O: 0,
+
+            draw: 0
+
+        };
+
+
+        /* =========================
+           WINNING COMBINATIONS
+        ========================= */
+
+        const winningCombinations = [
+
+            [0, 1, 2],
+
+            [3, 4, 5],
+
+            [6, 7, 8],
+
+            [0, 3, 6],
+
+            [1, 4, 7],
+
+            [2, 5, 8],
+
+            [0, 4, 8],
+
+            [2, 4, 6]
+
+        ];
+
+
+        /* =========================
+           GET CELLS
+        ========================= */
+
+        const cells =
+            document.querySelectorAll(".cell");
+
+
+        /* =========================
+           CELL CLICK
+        ========================= */
+
+        cells.forEach(function(cell) {
+
+            cell.addEventListener(
+                "click",
+                function() {
+
+                    const index =
+                        Number(
+                            cell.dataset.index
+                        );
+
+                    playMove(index);
+
+                }
+            );
+
+        });
+
+
+        /* =========================
+           PLAY MOVE
+        ========================= */
+
+        function playMove(index) {
+
+
+            // Don't allow moves after game ends
+
+            if (!gameActive) {
+
+                return;
+
+            }
+
+
+            // Don't allow occupied cells
+
+            if (board[index] !== "") {
+
+                return;
+
+            }
+
+
+            // Store X or O
+
+            board[index] =
+                currentPlayer;
+
+
+            // Display X or O
+
+            cells[index].textContent =
+                currentPlayer;
+
+
+            cells[index].classList.add(
+                currentPlayer.toLowerCase()
+            );
+
+
+            // Check result
+
+            checkResult();
+
+        }
+
+
+        /* =========================
+           CHECK RESULT
+        ========================= */
+
+        function checkResult() {
+
+
+            let winningLine = null;
+
+
+            // Check all winning combinations
+
+            for (
+                let combination
+                of winningCombinations
+            ) {
+
+                const a =
+                    board[combination[0]];
+
+                const b =
+                    board[combination[1]];
+
+                const c =
+                    board[combination[2]];
+
+
+                if (
+                    a !== "" &&
+                    a === b &&
+                    b === c
+                ) {
+
+                    winningLine =
+                        combination;
+
+                    break;
+
+                }
+
+            }
+
+
+            // WIN
+
+            if (winningLine) {
+
+                gameActive = false;
+
+
+                // Highlight winning cells
+
+                winningLine.forEach(
+                    function(index) {
+
+                        cells[index]
+                            .classList
+                            .add("winner");
+
+                    }
+                );
+
+
+                // Increase score
+
+                scores[currentPlayer]++;
+
+
+                updateScores();
+
+
+                document.getElementById(
+                    "result"
+                ).textContent =
+                    `🎉 Player ${currentPlayer} Wins!`;
+
+
+                document.getElementById(
+                    "turn"
+                ).textContent =
+                    "🏆 Game Over";
+
+
+                return;
+
+            }
+
+
+            // DRAW
+
+            if (!board.includes("")) {
+
+                gameActive = false;
+
+
+                scores.draw++;
+
+
+                updateScores();
+
+
+                document.getElementById(
+                    "result"
+                ).textContent =
+                    "🤝 It's a Draw!";
+
+
+                document.getElementById(
+                    "turn"
+                ).textContent =
+                    "🤝 Game Over";
+
+
+                return;
+
+            }
+
+
+            // SWITCH PLAYER
+
+            if (currentPlayer === "X") {
+
+                currentPlayer = "O";
+
+            } else {
+
+                currentPlayer = "X";
+
+            }
+
+
+            updateTurn();
+
+        }
+
+
+        /* =========================
+           UPDATE TURN
+        ========================= */
+
+        function updateTurn() {
+
+            document.getElementById(
+                "turn"
+            ).textContent =
+                `Player ${currentPlayer}'s Turn`;
+
+        }
+
+
+        /* =========================
+           UPDATE SCORES
+        ========================= */
+
+        function updateScores() {
+
+            document.getElementById(
+                "scoreX"
+            ).textContent =
+                scores.X;
+
+
+            document.getElementById(
+                "scoreO"
+            ).textContent =
+                scores.O;
+
+
+            document.getElementById(
+                "scoreDraw"
+            ).textContent =
+                scores.draw;
+
+        }
+
+
+        /* =========================
+           RESTART GAME
+        ========================= */
+
+        function restartGame() {
+
+
+            // Empty board
+
+            board = [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ];
+
+
+            currentPlayer = "X";
+
+
+            gameActive = true;
+
+
+            // Clear cells
+
+            cells.forEach(
+                function(cell) {
+
+                    cell.textContent = "";
+
+                    cell.classList.remove(
+                        "x",
+                        "o",
+                        "winner"
+                    );
+
+                }
+            );
+
+
+            // Clear result
+
+            document.getElementById(
+                "result"
+            ).textContent = "";
+
+
+            updateTurn();
+
+        }
+
+
+        /* =========================
+           NEW GAME
+        ========================= */
+
+        function newGame() {
+
+            restartGame();
+
+        }
+
+
+        /* =========================
+           RESET SCORES
+        ========================= */
+
+        function resetScores() {
+
+
+            const confirmReset =
+                confirm(
+                    "Are you sure you want to reset all scores?"
+                );
+
+
+            if (!confirmReset) {
+
+                return;
+
+            }
+
+
+            scores = {
+
+                X: 0,
+
+                O: 0,
+
+                draw: 0
+
+            };
+
+
+            updateScores();
+
+
+            restartGame();
+
+        }
+
+
+        /* =========================
+           INITIAL SETUP
+        ========================= */
+
+        updateScores();
+
+        updateTurn();
+
+    </script>
+
+</body>
+
+</html>
